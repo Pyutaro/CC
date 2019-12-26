@@ -1,14 +1,14 @@
---v0.1.0
+--v0.1.8
 tArgs = { ... }
 globalData = {}
 globalData.config = {}
 globalData.config.downloadPath = "http://localhost/"
-globalData.version = "???"
+globalData.version = "v0.1.8"
 
 function cPrint (str)
   local sw, sh = term.getSize()
   local cstr = string.rep(" ", math.floor(sw/2 - str:len()/2)) .. str .. string.rep(" ", math.ceil(sw/2 - str:len()/2))
-  term.write(cstr .. "\n")
+  print(cstr)
 end
 
 function fuelFormat ()
@@ -25,7 +25,7 @@ function displayStatus ()
   term.setCursorPos(1,1)
   term.setCursorBlink(false)
   cPrint("Bob " .. globalData.version)
-  term.write(string.rep("=",sw))
+  print(string.rep("=",sw))
   print(" HDD Space: " .. fs.getFreeSpace("/") .. " bytes free")
   print(" Fuel: " .. fuelFormat())
   term.write(string.rep("=",sw))
@@ -34,7 +34,7 @@ end
 function getVersion (str)
   local nlPos = string.find(str, "\n")
   if nlPos ~= nil and nlPos ~= -1 then
-    return nlPos:sub(3,nlPos-1)
+    return string.sub(str,3,nlPos-1)
   else
     return "0"
   end
@@ -47,6 +47,20 @@ function download (file)
   return http_data
 end
 
+function what ()
+  local whats = {
+    "What?",
+    "Nani?",
+    "What was that?",
+    "Whaaaat?",
+    "Eh?",
+    "What's that?",
+    "Sorry... what?"
+  }
+  local x = math.random(#whats)
+  print(whats[x])
+end
+
 function createConfigFile ()
   print("Did you want to download updates from...")
   print("[1] - Localhost")
@@ -57,14 +71,20 @@ function createConfigFile ()
     local input = io.read()
     if input == "1" then
       globalData.config.downloadPath = "http://localhost/"
+      break
     elseif input == "2" then
       globalData.config.downloadPath = "https://raw.githubusercontent.com/Pyutaro/CC/master/Xampp/src/"
+      break
     elseif input == "3" then
       globalData.config.downloadPath = "https://raw.githubusercontent.com/Pyutaro/CC/working/Xampp/src/"
+      break
     elseif input == "4" then
       print("Please input the path carefully!")
       term.write("Base URL: ")
       globalData.config.downloadPath = io.read()
+      break
+    else
+      what()
     end
   end
 
@@ -86,6 +106,7 @@ function boot ()
     sleep(0.2)
     term.write(".")
   end
+  print("")
 
   local myFilename = shell.getRunningProgram()
   local selfFileHandler = fs.open(myFilename, "rb")
@@ -94,6 +115,7 @@ function boot ()
 
   globalData.version = getVersion(selfData)
   print("I found my version to be: " .. globalData.version)
+  sleep(0.1)
   print("Time to read my config file...")
 
   if fs.exists("config") then
@@ -136,6 +158,8 @@ function boot ()
             local newHandler = fs.open(shell.getRunningProgram(), "wb")
             newHandler.write(onlineData)
             newHandler.close()
+          else
+            print("And we're up to date!")
           end
         end
       end
@@ -147,8 +171,35 @@ function boot ()
   shell.run(shell.getRunningProgram(), "run")
 end
 
+function processInput (str)
+
+end
+
 function run ()
-  print("Whoops! Not ready yet!")
+  local sw, sh = term.getSize()
+  local input = ""
+  displayStatus()
+  term.setCursorPos(1,sh)
+  term.write("> ")
+  term.setCursorBlink(true)
+  while true do
+    local event, char = os.pullEvent()
+    if event == "char" then
+      input = input .. char
+      
+    elseif event == "key" then
+      if char == keys.enter then
+        processInput(input)
+        input = ""
+      elseif char == keys.backspace then
+        input = string.sub(input, 1, #input - 1)
+      end
+    end
+    term.setCursorPos(1,sh)
+    local sstr = "> " .. input:sub(0-sw+3)
+    sstr = sstr .. string.rep(" ",sw-sstr:len())
+    term.write(sstr)
+  end
 end
 
 if #tArgs == 0 then
