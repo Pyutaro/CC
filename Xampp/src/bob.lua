@@ -1,4 +1,4 @@
---v0.1.13
+--v0.1.15
 tArgs = { ... }
 globalData = {}
 globalData.config = {}
@@ -194,6 +194,88 @@ function split(pString, pPattern)
   return Table
 end
 
+function getFreeInventorySpace ()
+  local space = 0
+  for i=1, 16 do
+    space = space + turtle.getItemSpace(i)
+  end
+  return space
+end
+
+function df ()
+  if turtle.detect() then
+    turtle.dig()
+  end
+end
+
+function du ()
+  if turtle.detectUp() then
+    turtle.digUp()
+  end
+end
+
+function dd ()
+  if turtle.detectDown() then
+    turtle.digDown()
+  end
+end
+
+function tunnel ()
+  while true do
+    sleep(0.1)
+    local fuelLevel = turtle.getFuelLevel()
+    if fuelLevel < 100 then
+      refuel()
+    end
+    if fuelLevel == 0 then
+      break
+    end
+    local space = getFreeInventorySpace()
+    if space == 0 then
+      break 
+    end
+    for ii=1, 3 do
+      for i=1, 3 do
+        df()
+        du()
+        if i==3 then
+          break
+        end
+        turtle.up()
+      end
+      turtle.down()
+      turtle.down()
+      if ii==3 then
+        break
+      end
+      turtle.turnRight()
+      df()
+      turtle.forward()
+      turtle.turnLeft()
+    end
+    turtle.turnLeft()
+    turtle.forward()
+    turtle.forward()
+    turtle.turnRight()
+    turtle.forward()
+  end
+end
+
+function refuel ()
+  for i=1, 16 do
+    local itemData = turtle.getItemDetail(i)
+    if type(itemData) == "table" then
+      if itemData.name == "minecraft:coal" then
+        turtle.select(i)
+        turtle.refuel()
+        if turtle.getFuelLevel() == turtle.getFuelLimit() then
+          break
+        end
+      end
+    end
+  end
+end
+
 function processInput (str)
   local c = split(str, " ")
   if #c > 0 then
@@ -238,19 +320,23 @@ function processInput (str)
         globalData.status = "Already have plenty of fuel"
         globalData.requireRefresh = true
       else
-        for i=1, 16 do
-          local itemData = turtle.getItemDetail(i)
-          if type(itemData) == "table" then
-            if itemData.name == "minecraft:coal" then
-              turtle.select(i)
-              turtle.refuel()
-              if turtle.getFuelLevel() == turtle.getFuelLimit() then
-                break
-              end
-            end
-          end
+        local start = turtle.getFuelLevel()
+        
+        local ending = turtle.getFuelLevel() - start
+        if ending > 0 then
+          globalData.status = "+" .. tostring(ending) .. " fuel"
+        else
+          globalData.status = "Could not find coal"
         end
+        globalData.requireRefresh = true
       end
+    elseif cmd == "fuel" then
+      globalData.status = tostring(turtle.getFuelLevel())
+      globalData.requireRefresh = true
+    elseif cmd == "m" then
+      turtle.dig()
+    elseif cmd == "tunnel" then
+      tunnel()
     else
       globalData.status = "No idea what you want."
       globalData.requireRefresh = true
