@@ -1,4 +1,4 @@
---v0.1.12
+--v0.1.13
 tArgs = { ... }
 globalData = {}
 globalData.config = {}
@@ -208,6 +208,49 @@ function processInput (str)
       print("Bye!")
       globalData.running = false
       error()
+    elseif cmd == "f" or cmd == "forward" then
+      if turtle.getFuelLevel() > 0 then
+        turtle.forward()
+      else
+        globalData.status = "Out of fuel!"
+        globalData.requireRefresh = true
+      end
+    elseif cmd == "b" or cmd == "back" then
+      if turtle.getFuelLevel() > 0 then
+        turtle.back()
+      else
+        globalData.status = "Out of fuel!"
+        globalData.requireRefresh = true
+      end
+    elseif cmd == "ss" then
+      local slotNum = tonumber(c[2])
+      if slotNum == nil then
+        globalData.status = "Slot number must be a number"
+        globalData.requireRefresh = true
+      elseif slotNum > 0 and slotNum < 17 then
+        turtle.select(slotNum)
+      else
+        globalData.status = "Bad slot value"
+        globalData.requireRefresh = true
+      end
+    elseif cmd == "rf" or cmd == "refuel" then
+      if turtle.getFuelLevel() == turtle.getFuelLimit() then
+        globalData.status = "Already have plenty of fuel"
+        globalData.requireRefresh = true
+      else
+        for i=1, 16 do
+          local itemData = turtle.getItemDetail(i)
+          if type(itemData) == "table" then
+            if itemData.name == "minecraft:coal" then
+              turtle.select(i)
+              turtle.refuel()
+              if turtle.getFuelLevel() == turtle.getFuelLimit() then
+                break
+              end
+            end
+          end
+        end
+      end
     else
       globalData.status = "No idea what you want."
       globalData.requireRefresh = true
