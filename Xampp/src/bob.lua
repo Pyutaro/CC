@@ -1,9 +1,11 @@
---v0.1.8
+--v0.1.11
 tArgs = { ... }
 globalData = {}
 globalData.config = {}
 globalData.config.downloadPath = "http://localhost/"
-globalData.version = "v0.1.8"
+globalData.version = ""
+globalData.status = "Hmm..."
+globalData.requireRefresh = false
 
 function cPrint (str)
   local sw, sh = term.getSize()
@@ -28,7 +30,8 @@ function displayStatus ()
   print(string.rep("=",sw))
   print(" HDD Space: " .. fs.getFreeSpace("/") .. " bytes free")
   print(" Fuel: " .. fuelFormat())
-  term.write(string.rep("=",sw))
+  print(string.rep("=",sw))
+  print(" " .. globalData.status)
 end
 
 function getVersion (str)
@@ -171,18 +174,55 @@ function boot ()
   shell.run(shell.getRunningProgram(), "run")
 end
 
-function processInput (str)
+function split(pString, pPattern)
+  local Table = {}  -- NOTE: use {n = 0} in Lua-5.0
+  local fpat = "(.-)" .. pPattern
+  local last_end = 1
+  local s, e, cap = pString:find(fpat, 1)
+  while s do
+     if s ~= 1 or cap ~= "" then
+      table.insert(Table,cap)
+     end
+     last_end = e+1
+     s, e, cap = pString:find(fpat, last_end)
+  end
+  if last_end <= #pString then
+     cap = pString:sub(last_end)
+     table.insert(Table, cap)
+  end
+  return Table
+end
 
+function processInput (str)
+  local c = split(str, " ")
+  if #c > 0 then
+    local cmd = c[1]
+    if cmd == "tr" then
+      turtle.turnRight()
+    elseif cmd == "tl" then
+      turtle.turnLeft()
+    else
+      globalData.status = "No idea what you want."
+      globalData.requireRefresh = true
+    end
+  end
 end
 
 function run ()
+  local myFilename = shell.getRunningProgram()
+  local selfFileHandler = fs.open(myFilename, "rb")
+  local selfData = selfFileHandler.readAll()
+  selfFileHandler.close()
+  globalData.version = getVersion(selfData)
+
   local sw, sh = term.getSize()
   local input = ""
   displayStatus()
   term.setCursorPos(1,sh)
   term.write("> ")
-  term.setCursorBlink(true)
+  
   while true do
+    term.setCursorBlink(true)
     local event, char = os.pullEvent()
     if event == "char" then
       input = input .. char
@@ -190,6 +230,10 @@ function run ()
     elseif event == "key" then
       if char == keys.enter then
         processInput(input)
+        if globalData.requireRefresh then
+          displayStatus()
+          globalData.requireRefresh = false
+        end
         input = ""
       elseif char == keys.backspace then
         input = string.sub(input, 1, #input - 1)
