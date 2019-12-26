@@ -1,4 +1,4 @@
---v0.1.11
+--v0.1.12
 tArgs = { ... }
 globalData = {}
 globalData.config = {}
@@ -6,6 +6,7 @@ globalData.config.downloadPath = "http://localhost/"
 globalData.version = ""
 globalData.status = "Hmm..."
 globalData.requireRefresh = false
+globalData.running = true
 
 function cPrint (str)
   local sw, sh = term.getSize()
@@ -201,6 +202,12 @@ function processInput (str)
       turtle.turnRight()
     elseif cmd == "tl" then
       turtle.turnLeft()
+    elseif cmd == "exit" then
+      term.clear()
+      term.setCursorPos(1,1)
+      print("Bye!")
+      globalData.running = false
+      error()
     else
       globalData.status = "No idea what you want."
       globalData.requireRefresh = true
@@ -221,7 +228,7 @@ function run ()
   term.setCursorPos(1,sh)
   term.write("> ")
   
-  while true do
+  while globalData.running do
     term.setCursorBlink(true)
     local event, char = os.pullEvent()
     if event == "char" then
