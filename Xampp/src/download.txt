@@ -1,0 +1,1 @@
+wget http://localhost/download.lua dl
