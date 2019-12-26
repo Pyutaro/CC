@@ -1,4 +1,4 @@
---v0.1.15
+--v0.1.17
 tArgs = { ... }
 globalData = {}
 globalData.config = {}
@@ -232,7 +232,7 @@ function tunnel ()
     end
     local space = getFreeInventorySpace()
     if space == 0 then
-      break 
+      --break 
     end
     for ii=1, 3 do
       for i=1, 3 do
@@ -321,7 +321,7 @@ function processInput (str)
         globalData.requireRefresh = true
       else
         local start = turtle.getFuelLevel()
-        
+        refuel()
         local ending = turtle.getFuelLevel() - start
         if ending > 0 then
           globalData.status = "+" .. tostring(ending) .. " fuel"
