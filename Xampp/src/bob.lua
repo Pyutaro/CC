@@ -1,8 +1,8 @@
---v0.1.17
+--v0.1.18
 tArgs = { ... }
 globalData = {}
 globalData.config = {}
-globalData.config.downloadPath = "http://localhost/"
+globalData.config.downloadPath = "http://localhost/cc/"
 globalData.version = ""
 globalData.status = "Hmm..."
 globalData.requireRefresh = false
@@ -74,7 +74,7 @@ function createConfigFile ()
   while true do
     local input = io.read()
     if input == "1" then
-      globalData.config.downloadPath = "http://localhost/"
+      globalData.config.downloadPath = "http://localhost/cc/"
       break
     elseif input == "2" then
       globalData.config.downloadPath = "https://raw.githubusercontent.com/Pyutaro/CC/master/Xampp/src/"

@@ -1,1 +1,1 @@
-xcopy "src" "C:\xampp2\htdocs\" /Y /I
+xcopy "src" "C:\xampp2\htdocs\cc\" /Y /I
